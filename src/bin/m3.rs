@@ -1,7 +1,8 @@
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 use std::rc::Rc;
 
-use codingup_qualifs::*;
+use codingup_qualifs::io::*;
+use codingup_qualifs::dijkstra::*;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct State

@@ -1,4 +1,4 @@
-use codingup_qualifs::*;
+use codingup_qualifs::io::*;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct State

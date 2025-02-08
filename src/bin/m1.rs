@@ -1,7 +1,7 @@
 use std::collections::{HashSet, VecDeque};
 use std::rc::Rc;
 
-use codingup_qualifs::*;
+use codingup_qualifs::io::*;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct State

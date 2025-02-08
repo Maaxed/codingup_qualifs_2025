@@ -1,7 +1,6 @@
 [
-	"MOVE 9 4",
-	"PLANT 15 4",
 	"MOVE 10 5",
+	"PLANT 15 4",
 	"COLLECT",
 	"MOVE 11 18",
 	"PLANT 11 24",

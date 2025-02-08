@@ -1,20 +1,7 @@
 use std::collections::{HashSet, VecDeque};
-use std::fs::File;
-use std::io::BufWriter;
 use std::rc::Rc;
-use serde::Deserialize;
 
-#[derive(Deserialize)]
-struct Input
-{
-	#[serde(rename(deserialize = "maxDistance"))]
-	max_distance: u32,
-	#[serde(rename(deserialize = "seedCapacity"))]
-	seed_capacity: u32,
-	range: i32,
-	seeds: Vec<[i32;2]>,
-	plants: Vec<[i32;2]>,
-}
+use codingup_qualifs::*;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct State
@@ -23,14 +10,6 @@ struct State
 	seed_storage: u32,
 	seeds: Rc<[[i32;2]]>, // Use rc instead of vec to avoid cloning the list as much as possible
 	plants: Rc<[[i32;2]]>,
-}
-
-#[derive(Debug, Clone)]
-enum Action
-{
-	Move([i32;2]),
-	Plant([i32;2]),
-	Collect,
 }
 
 #[derive(Debug, Clone)]
@@ -43,9 +22,7 @@ struct StateAndMoves
 
 fn main() -> serde_json::Result<()>
 {
-	let json = include_str!("2_champ.json");
-
-	let input: Input = serde_json::from_str(json)?;
+	let input = read_input()?;
 
 	let mut min_pos = [i32::MAX; 2];
 
@@ -146,25 +123,8 @@ fn main() -> serde_json::Result<()>
 
 		if state.plants.is_empty()
 		{
-			println!("Solution found in {} moves!", moves.len());
-			let buffer = BufWriter::new(File::create("out.json").unwrap());
-			let mut moves_str = Vec::new();
-			for action in moves
-			{
-				moves_str.push(match action
-				{
-					Action::Move(pos) => format!("MOVE {} {}", pos[0], pos[1]),
-					Action::Plant(pos) => format!("PLANT {} {}", pos[0], pos[1]),
-					Action::Collect => "COLLECT".to_string(),
-				});
-			}
-			serde_json::to_writer(buffer, &moves_str)?;
+			write_output(&moves);
 			return Ok(())
-		}
-
-		if remaining_distance == 0
-		{
-			continue;
 		}
 
 		if state.seed_storage < input.seed_capacity
@@ -194,6 +154,11 @@ fn main() -> serde_json::Result<()>
 					break;
 				}
 			}
+		}
+
+		if remaining_distance == 0
+		{
+			continue;
 		}
 
 		let pos = state.robot_pos;

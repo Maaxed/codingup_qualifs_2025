@@ -17,7 +17,7 @@ struct State
 struct BackAction
 {
 	old_state: State,
-	action: Action,
+	action: OutAction,
 }
 
 fn main() -> serde_json::Result<()>
@@ -78,7 +78,7 @@ fn main() -> serde_json::Result<()>
 				moves.push_front(b.action);
 				if state.robot_pos != b.old_state.robot_pos
 				{
-					moves.push_front(Action::Move(state.robot_pos));
+					moves.push_front(OutAction::Move(state.robot_pos));
 				}
 
 				state = &b.old_state;
@@ -123,7 +123,7 @@ fn main() -> serde_json::Result<()>
 							Some(BackAction
 							{
 								old_state: state.clone(),
-								action: Action::Plant(*plant),
+								action: OutAction::Plant(*plant),
 							}),
 							State
 							{
@@ -148,7 +148,7 @@ fn main() -> serde_json::Result<()>
 								Some(BackAction
 								{
 									old_state: state.clone(),
-									action: Action::Plant(*plant),
+									action: OutAction::Plant(*plant),
 								}),
 								State
 								{
@@ -189,7 +189,7 @@ fn main() -> serde_json::Result<()>
 					Some(BackAction
 					{
 						old_state: state.clone(),
-						action: Action::Collect,
+						action: OutAction::Collect,
 					}),
 					State
 					{

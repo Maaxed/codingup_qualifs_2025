@@ -17,7 +17,7 @@ struct StateAndMoves
 {
 	state: State,
 	remaining_distance: u32,
-	moves: Vec<Action>,
+	moves: Vec<OutAction>,
 }
 
 fn main() -> serde_json::Result<()>
@@ -72,7 +72,7 @@ fn main() -> serde_json::Result<()>
 
 	if min_pos[0] > input.range || min_pos[1] > input.range
 	{
-		initial_state.moves.push(Action::Move(initial_state.state.robot_pos));
+		initial_state.moves.push(OutAction::Move(initial_state.state.robot_pos));
 	}
 
 	dbg![min_pos, max_pos];
@@ -103,7 +103,7 @@ fn main() -> serde_json::Result<()>
 					plants.remove(plant_index);
 
 					let mut moves = moves.clone();
-					moves.push(Action::Plant(*plant));
+					moves.push(OutAction::Plant(*plant));
 
 					queue.push_front(StateAndMoves
 					{
@@ -137,7 +137,7 @@ fn main() -> serde_json::Result<()>
 					seeds.remove(seed_index);
 
 					let mut moves = moves.clone();
-					moves.push(Action::Collect);
+					moves.push(OutAction::Collect);
 
 					queue.push_front(StateAndMoves
 					{
@@ -178,7 +178,7 @@ fn main() -> serde_json::Result<()>
 			let new_pos = [pos[0] + delta[0], pos[1] + delta[1]];
 
 			let mut moves = moves.clone();
-			moves.push(Action::Move(new_pos));
+			moves.push(OutAction::Move(new_pos));
 
 			queue.push_back(StateAndMoves
 			{

@@ -17,7 +17,7 @@ pub struct Input
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum Action
+pub enum OutAction
 {
 	Move([i32;2]),
 	Plant([i32;2]),
@@ -39,7 +39,7 @@ pub fn read_input() -> serde_json::Result<Input>
 	serde_json::from_reader(reader)
 }
 
-pub fn write_output(actions: &[Action])
+pub fn write_output(actions: &[OutAction])
 {
 	println!("Solution found in {} moves!", actions.len());
 	let exe_name = std::env::current_exe().unwrap().file_stem().unwrap().to_str().unwrap().to_owned();
@@ -50,9 +50,9 @@ pub fn write_output(actions: &[Action])
 	{
 		moves_str.push(match action
 		{
-			Action::Move(pos) => format!("MOVE {} {}", pos[0], pos[1]),
-			Action::Plant(pos) => format!("PLANT {} {}", pos[0], pos[1]),
-			Action::Collect => "COLLECT".to_string(),
+			OutAction::Move(pos) => format!("MOVE {} {}", pos[0], pos[1]),
+			OutAction::Plant(pos) => format!("PLANT {} {}", pos[0], pos[1]),
+			OutAction::Collect => "COLLECT".to_string(),
 		});
 	}
 	

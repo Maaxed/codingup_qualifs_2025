@@ -1,11 +1,10 @@
-use codingup_qualifs::io::*;
+use codingup_qualifs::{io::*, resolve, Action, ActionKind};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct State
 {
 	robot_pos: [i32; 2],
 	seed_storage: u32,
-	remaining_distance: u32,
 	seeds: Vec<[i32;2]>,
 	plants: Vec<[i32;2]>,
 }
@@ -18,9 +17,8 @@ fn main() -> serde_json::Result<()>
 	{
 		robot_pos: [0, 0],
 		seed_storage: input.seed_capacity,
-		remaining_distance: input.max_distance,
-		seeds: input.seeds,
-		plants: input.plants,
+		seeds: input.seeds.clone(),
+		plants: input.plants.clone(),
 	};
 
 	let mut moves = Vec::new();
@@ -39,25 +37,15 @@ fn main() -> serde_json::Result<()>
 
 			let min_plant_pos = *min_plant_pos;
 
-			let delta = [min_plant_pos[0] - pos[0], min_plant_pos[1] - pos[1]];
-			let dist = (delta[0].abs() + delta[1].abs()) as u32;
-
-			if dist > state.remaining_distance
+			moves.push(Action
 			{
-				println!("Out of energy!");
-				break;
-			}
-
-			if min_plant_pos != state.robot_pos
-			{
-				moves.push(OutAction::Move(min_plant_pos));
-			}
-			moves.push(OutAction::Plant(min_plant_pos));
+				pos: min_plant_pos,
+				kind: ActionKind::Plant
+			});
 
 			state.robot_pos = min_plant_pos;
 			state.seed_storage -= 1;
 			state.plants.remove(min_plant_index);
-			state.remaining_distance -= dist;
 		}
 		else
 		{
@@ -69,29 +57,21 @@ fn main() -> serde_json::Result<()>
 
 			let min_seed_pos = *min_seed_pos;
 
-			let delta = [min_seed_pos[0] - pos[0], min_seed_pos[1] - pos[1]];
-			let dist = (delta[0].abs() + delta[1].abs()) as u32;
-
-			if dist > state.remaining_distance
+			moves.push(Action
 			{
-				println!("Out of energy!");
-				break;
-			}
-
-			if min_seed_pos != state.robot_pos
-			{
-				moves.push(OutAction::Move(min_seed_pos));
-			}
-			moves.push(OutAction::Collect);
+				pos: min_seed_pos,
+				kind: ActionKind::Collect
+			});
 
 			state.robot_pos = min_seed_pos;
 			state.seed_storage = input.seed_capacity;
 			state.seeds.remove(min_seed_index);
-			state.remaining_distance -= dist;
 		}
 	}
 
-	write_output(&moves);
+	let (_dist, mut res) = resolve(&input, &moves);
+
+	write_output(res.make_contiguous());
 
 	Ok(())
 }

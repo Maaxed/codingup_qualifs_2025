@@ -6,7 +6,7 @@ use std::collections::{BinaryHeap, HashMap, VecDeque};
 use dijkstra::WeightedNode;
 use io::{Input, OutAction};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ActionKind
 {
 	Collect,
@@ -32,6 +32,12 @@ impl Action
 	}
 }
 
+
+pub fn distance(a: [i32; 2], b: [i32; 2]) -> i32
+{
+	let delta = [a[0] - b[0], a[1] - b[1]];
+	delta[0].abs() + delta[1].abs()
+}
 
 
 pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
@@ -75,6 +81,7 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 
 		if state.action_index >= actions.len()
 		{
+			println!("Found solution with all plants!");
 			end_point = Some((distance_traveled, state));
 			break;
 		}
@@ -117,6 +124,7 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 
 					if new_distance_traveled as u32 > input.max_distance
 					{
+						println!("Out of energy!");
 						end_point = Some((distance_traveled, state));
 						break;
 					}
@@ -141,12 +149,12 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 			},
 			ActionKind::Collect =>
 			{
-				let delta = [action.pos[0] - pos[0], action.pos[1] - pos[1]];
-				let dist = delta[0].abs() + delta[1].abs();
+				let dist = distance(pos, action.pos);
 				let new_distance_traveled = distance_traveled + dist;
 
 				if new_distance_traveled as u32 > input.max_distance
 				{
+					println!("Out of energy!");
 					end_point = Some((distance_traveled, state));
 					break;
 				}
@@ -163,7 +171,7 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 		}
 	}
 
-	let Some((distance_traveled, state)) = end_point
+	let Some((mut distance_traveled, state)) = end_point
 	else
 	{
 		return (0, VecDeque::new());
@@ -176,10 +184,17 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 	let mut back = &prev_move[state];
 	while let Some(b) = back
 	{
-		moves.push_front(b.action.as_output());
-		if state.robot_pos != b.old_state.robot_pos
+		if b.action.kind == ActionKind::Collect && moves.is_empty()
 		{
-			moves.push_front(OutAction::Move(state.robot_pos));
+			distance_traveled -= distance(state.robot_pos, b.old_state.robot_pos);
+		}
+		else
+		{
+			moves.push_front(b.action.as_output());
+			if state.robot_pos != b.old_state.robot_pos
+			{
+				moves.push_front(OutAction::Move(state.robot_pos));
+			}
 		}
 
 		state = &b.old_state;

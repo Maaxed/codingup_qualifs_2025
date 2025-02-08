@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
+use std::fmt::Write;
 
 use serde::Deserialize;
 
@@ -42,8 +43,12 @@ pub fn read_input() -> serde_json::Result<Input>
 pub fn write_output(actions: &[OutAction])
 {
 	println!("Solution found in {} moves!", actions.len());
-	let exe_name = std::env::current_exe().unwrap().file_stem().unwrap().to_str().unwrap().to_owned();
+	let mut exe_name = std::env::current_exe().unwrap().file_stem().unwrap().to_str().unwrap().to_owned();
 	let file_name = arg_file_name();
+	for arg in std::env::args().skip(2)
+	{
+		write!(&mut exe_name, "_{arg}").unwrap();
+	}
 	let buffer = BufWriter::new(File::create(format!("output/{file_name}_{exe_name}.json")).unwrap());
 	let mut moves_str = Vec::new();
 	for action in actions

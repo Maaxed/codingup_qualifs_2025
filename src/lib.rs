@@ -29,7 +29,7 @@ fn arg_file_name() -> String
 	let mut args = std::env::args();
 	args.next();
 
-	args.next().unwrap_or("1_exemple".to_owned())
+	args.next().unwrap_or("1".to_owned())
 }
 
 pub fn read_input() -> serde_json::Result<Input>
@@ -44,7 +44,7 @@ pub fn write_output(actions: &[Action])
 	println!("Solution found in {} moves!", actions.len());
 	let exe_name = std::env::current_exe().unwrap().file_stem().unwrap().to_str().unwrap().to_owned();
 	let file_name = arg_file_name();
-	let buffer = BufWriter::new(File::create(format!("output/{file_name}_{exe_name}_out.json")).unwrap());
+	let buffer = BufWriter::new(File::create(format!("output/{file_name}_{exe_name}.json")).unwrap());
 	let mut moves_str = Vec::new();
 	for action in actions
 	{

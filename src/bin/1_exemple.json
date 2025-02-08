@@ -1,0 +1,7 @@
+{
+    "maxDistance": 100,
+    "seedCapacity": 2,
+    "range": 6,
+    "seeds": [[10, 5], [0, 18]],
+    "plants": [[15, 4], [46, 3], [11, 24]]
+}

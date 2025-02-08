@@ -1,0 +1,10 @@
+[
+  "MOVE 11 24",
+  "PLANT 11 24",
+  "MOVE 10 5",
+  "COLLECT",
+  "MOVE 15 4",
+  "PLANT 15 4",
+  "MOVE 46 3",
+  "PLANT 46 3"
+]

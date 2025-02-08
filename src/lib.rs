@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::fs::File;
-use std::io::BufWriter;
+use std::io::{BufReader, BufWriter};
 
 use serde::Deserialize;
 
@@ -24,17 +24,27 @@ pub enum Action
 	Collect,
 }
 
+fn arg_file_name() -> String
+{
+	let mut args = std::env::args();
+	args.next();
+
+	args.next().unwrap_or("1_exemple".to_owned())
+}
+
 pub fn read_input() -> serde_json::Result<Input>
 {
-	let json = include_str!("2_champ.json");
-
-	serde_json::from_str(json)
+	let file_name = arg_file_name();
+	let reader = BufReader::new(File::open(format!("input/{file_name}.json")).unwrap());
+	serde_json::from_reader(reader)
 }
 
 pub fn write_output(actions: &[Action])
 {
 	println!("Solution found in {} moves!", actions.len());
-	let buffer = BufWriter::new(File::create("out.json").unwrap());
+	let exe_name = std::env::current_exe().unwrap().file_stem().unwrap().to_str().unwrap().to_owned();
+	let file_name = arg_file_name();
+	let buffer = BufWriter::new(File::create(format!("output/{file_name}_{exe_name}_out.json")).unwrap());
 	let mut moves_str = Vec::new();
 	for action in actions
 	{
@@ -45,7 +55,8 @@ pub fn write_output(actions: &[Action])
 			Action::Collect => "COLLECT".to_string(),
 		});
 	}
-	serde_json::to_writer(buffer, &moves_str).unwrap();
+	
+	serde_json::to_writer_pretty(buffer, &moves_str).unwrap();
 }
 
 

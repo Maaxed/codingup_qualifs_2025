@@ -28,8 +28,6 @@ fn main() -> serde_json::Result<()>
 
 	let mut priority_queue = BinaryHeap::new();
 
-	let mut processed = HashSet::new();
-
 	let mut seed_set: HashSet<Rc<[[i32;2]]>> = HashSet::new();
 	let mut plant_set: HashSet<Rc<[[i32;2]]>> = HashSet::new();
 
@@ -53,16 +51,16 @@ fn main() -> serde_json::Result<()>
 
 	while let Some(WeightedNode(distance_traveled, (back, state))) = priority_queue.pop()
 	{
-		if !processed.insert(state.clone())
+		if prev_move.contains_key(&state)
 		{
 			continue;
 		}
 
 		prev_move.insert(state.clone(), back);
 
-		if processed.len() % 20000 == 0
+		if prev_move.len() % 20000 == 0
 		{
-			println!("{} {} {}", priority_queue.len(), processed.len(), distance_traveled);
+			println!("{} {} {}", priority_queue.len(), prev_move.len(), distance_traveled);
 		}
 
 		if state.plants.is_empty()
@@ -92,74 +90,39 @@ fn main() -> serde_json::Result<()>
 
 		if state.seed_storage > 0
 		{
-			let remaining_distance = input.max_distance as i32 - distance_traveled;
-			
-			for (plant_index, plant) in state.plants.iter().enumerate()
+			for (plant_index, &plant) in state.plants.iter().enumerate()
 			{
 				let delta = [plant[0] - pos[0], plant[1] - pos[1]];
-				let abs = [delta[0].abs(), delta[1].abs()];
-				let dist = abs[0] + abs[1];
-				if dist <= input.range + remaining_distance
+				let dist = delta[0].abs() + delta[1].abs();
+
+				let mut plants = state.plants.to_vec();
+				plants.remove(plant_index);
+
+				let plants = if let Some(plants) = plant_set.get(&plants[..])
 				{
-					let mut plants = state.plants.to_vec();
-					plants.remove(plant_index);
-
-					let plants = if let Some(plants) = plant_set.get(&plants[..])
-					{
-						plants.clone()
-					}
-					else
-					{
-						let plants: Rc<[[i32; 2]]> = plants.into();
-						plant_set.insert(plants.clone());
-						plants
-					};
-
-					if dist <= input.range
-					{
-						// No move required
-						priority_queue.push(WeightedNode(distance_traveled, (
-							Some(BackAction
-							{
-								old_state: state.clone(),
-								action: Action::Plant(*plant),
-							}),
-							State
-							{
-								robot_pos: pos,
-								seed_storage: state.seed_storage-1,
-								seeds: state.seeds.clone(),
-								plants,
-							},
-						)));
-					}
-					else
-					{
-						// Move is required
-						let sign = [delta[0].signum(), delta[1].signum()];
-						for dx in i32::max(0, input.range - abs[1])..=i32::min(abs[0], input.range)
-						{
-							let dy = input.range - dx;
-
-							let new_pos = [plant[0] - sign[0] * dx, plant[1] - sign[1] * dy];
-		
-							priority_queue.push(WeightedNode(distance_traveled + dist - input.range, (
-								Some(BackAction
-								{
-									old_state: state.clone(),
-									action: Action::Plant(*plant),
-								}),
-								State
-								{
-									robot_pos: new_pos,
-									seed_storage: state.seed_storage-1,
-									seeds: state.seeds.clone(),
-									plants: plants.clone(),
-								},
-							)));
-						}
-					}
+					plants.clone()
 				}
+				else
+				{
+					let plants: Rc<[[i32; 2]]> = plants.into();
+					plant_set.insert(plants.clone());
+					plants
+				};
+
+				priority_queue.push(WeightedNode(distance_traveled + dist, (
+					Some(BackAction
+					{
+						old_state: state.clone(),
+						action: Action::Plant(plant),
+					}),
+					State
+					{
+						robot_pos: plant,
+						seed_storage: state.seed_storage-1,
+						seeds: state.seeds.clone(),
+						plants,
+					},
+				)));
 			}
 		}
 
@@ -167,8 +130,9 @@ fn main() -> serde_json::Result<()>
 		{
 			for (seed_index, &seed) in state.seeds.iter().enumerate()
 			{
-				let mut distance_traveled = distance_traveled;
-				distance_traveled += (seed[0] - pos[0]).abs() + (seed[1] - pos[1]).abs();
+				let delta = [seed[0] - pos[0], seed[1] - pos[1]];
+				let dist = delta[0].abs() + delta[1].abs();
+				let distance_traveled = distance_traveled + dist;
 
 				let mut seeds = state.seeds.to_vec();
 				seeds.remove(seed_index);

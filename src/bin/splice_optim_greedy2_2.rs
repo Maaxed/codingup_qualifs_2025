@@ -35,7 +35,7 @@ fn check_actions(input: &Input, actions: &[Action], slice_start: usize, slice_en
 
 fn splice_optim(input: &Input, actions: &mut [Action], max_size: usize)
 {
-	let (plant_count, distance_traveled) = resolve_fast(input, actions, true);
+	let (plant_count, distance_traveled) = resolve_fast(input, actions, false);
 	let mut value = (plant_count, -distance_traveled);
 	println!("Action count {}", actions.len());
 	println!("Base value {value:?}");
@@ -58,7 +58,7 @@ fn splice_optim(input: &Input, actions: &mut [Action], max_size: usize)
 						continue;
 					}
 
-					let (plant_count, distance_traveled) = resolve_fast(input, actions, true);
+					let (plant_count, distance_traveled) = resolve_fast(input, actions, false);
 					let new_value = (plant_count, -distance_traveled);
 
 					if new_value > value

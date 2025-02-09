@@ -211,7 +211,7 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (VecDeque<OutAction>, usize
 	(moves, plant_count, distance_traveled)
 }
 
-pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
+pub fn resolve_fast(input: &Input, actions: &[Action], limit_distance: bool) -> (usize, i32)
 {
 	#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 	struct State
@@ -277,7 +277,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 					// Move is required
 					let new_distance_traveled = distance_traveled + dist - input.range;
 
-					if new_distance_traveled as u32 > input.max_distance
+					if limit_distance && new_distance_traveled as u32 > input.max_distance
 					{
 						end_point = Some((distance_traveled, dist_back, state));
 						break;
@@ -306,7 +306,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 				let dist = distance(pos, action.pos);
 				let new_distance_traveled = distance_traveled + dist;
 
-				if new_distance_traveled as u32 > input.max_distance
+				if limit_distance && new_distance_traveled as u32 > input.max_distance
 				{
 					end_point = Some((distance_traveled, dist_back, state));
 					break;

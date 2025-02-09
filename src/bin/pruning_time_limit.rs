@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::time::{Duration, Instant};
 
 use codingup_qualifs::{distance, io::*};
 use hashbrown::{Equivalent, HashMap};
@@ -47,27 +48,48 @@ impl Equivalent<(State,u32)> for StateAndDepth<'_>
 	}
 }
 
-fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>, state: &mut State, max_cost: i32, depth: u32) -> Res
+fn find_best_action_time_limit(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>, state: &mut State, max_cost: i32, time_limit: Duration) -> Res
+{
+	let start = Instant::now();
+
+	let mut last_res = None;
+	for i in 1..
+	{
+		let res = find_best_action(input, memo, state, max_cost, start, time_limit, i, i == 1);
+		if let Some(res) = res
+		{
+			last_res = Some(res);
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	last_res.unwrap()
+}
+
+fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>, state: &mut State, max_cost: i32, start: Instant, time_limit: Duration, depth: u32, force_compute: bool) -> Option<Res>
 {
 	if state.plants.is_empty()
 	{
 		dbg!(max_cost);
-		return Res::Solved;
+		return Some(Res::Solved);
 	}
 
 	if depth == 0
 	{
-		return Res::Solved;
+		return Some(Res::Solved);
 	}
 
 	if let Some((ref_max_cost, res)) = memo.get(&StateAndDepth { state, depth })
 	{
 		match ref_max_cost.cmp(&max_cost)
 		{
-			Ordering::Equal => return *res,
+			Ordering::Equal => return Some(*res),
 			Ordering::Greater =>
 			{
-				return if let Res::SolutionFound { cost, .. } = res
+				return Some(if let Res::SolutionFound { cost, .. } = res
 				{
 					if *cost < max_cost
 					{
@@ -81,22 +103,18 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 				else
 				{
 					*res
-				};
+				});
 			},
 			Ordering::Less =>
 			{
 				if let Res::SolutionFound { .. } = res
 				{
-					return *res;
+					return Some(*res);
 				}
 			}
 		}
 	}
 
-	/*if memo.len() % 10000 == 0
-	{
-		println!("{} {} {}", memo.len(), max_cost, depth);
-	}*/
 
 	let pos = state.robot_pos;
 
@@ -108,6 +126,13 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 		state.seed_storage -= 1;
 		for index in 0..state.plants.len()
 		{
+			if !force_compute && start.elapsed() >= time_limit
+			{
+				state.robot_pos = pos;
+				state.seed_storage += 1;
+				return None;
+			}
+
 			let plant = state.plants[index];
 			let dist = distance(pos, plant);
 			
@@ -127,19 +152,25 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 				let mut cost = cost;
 				state.robot_pos = pos;
 
-				match find_best_action(input, memo, state, min_cost, depth-1)
+				match find_best_action(input, memo, state, min_cost, start, time_limit, depth-1, force_compute)
 				{
-					Res::SolutionFound { cost: child_cost, .. } =>
+					None =>
+					{
+						state.plants.insert(index, plant);
+						state.seed_storage += 1;
+						return None;
+					},
+					Some(Res::SolutionFound { cost: child_cost, .. }) =>
 					{
 						cost += child_cost;
 					},
-					Res::Solved =>
+					Some(Res::Solved) =>
 					{ },
-					Res::NoSolution =>
+					Some(Res::NoSolution) =>
 					{
 						state.plants.insert(index, plant);
 						continue;
-					},
+					}
 				}
 
 				if cost < min_cost
@@ -154,36 +185,45 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 
 				// Move is required
 				let sign = [delta[0].signum(), delta[1].signum()];
-				let min = i32::max(0, input.range - delta[1].abs());
-				let max = i32::min(delta[0].abs(), input.range);
-				let dx = (min + max) / 2;
-
-				let dy = input.range - dx;
-
-				let new_pos = [plant[0] - sign[0] * dx, plant[1] - sign[1] * dy];
-				state.robot_pos = new_pos;
-				
-				let mut cost = cost;
-
-				match find_best_action(input, memo, state, min_cost - cost, depth-1)
+				for dx in i32::max(0, input.range - delta[1].abs())..=i32::min(delta[0].abs(), input.range)
 				{
-					Res::SolutionFound { cost: child_cost, .. } =>
-					{
-						cost += child_cost;
-					},
-					Res::Solved =>
-					{ },
-					Res::NoSolution =>
+					if !force_compute && start.elapsed() >= time_limit
 					{
 						state.plants.insert(index, plant);
-						continue;
-					},
-				}
+						state.robot_pos = pos;
+						state.seed_storage += 1;
+						return None;
+					}
+					let dy = input.range - dx;
 
-				if cost < min_cost
-				{
-					min_cost = cost;
-					min_action = Some(MyAction { pos: new_pos, index, kind: OutAction::Plant(plant) });
+					let new_pos = [plant[0] - sign[0] * dx, plant[1] - sign[1] * dy];
+					state.robot_pos = new_pos;
+					
+					let mut cost = cost;
+
+					match find_best_action(input, memo, state, min_cost - cost, start, time_limit, depth-1, force_compute)
+					{
+						None =>
+						{
+							state.plants.insert(index, plant);
+							state.robot_pos = pos;
+							state.seed_storage += 1;
+							return None;
+						},
+						Some(Res::SolutionFound { cost: child_cost, .. }) =>
+						{
+							cost += child_cost;
+						},
+						Some(Res::Solved) =>
+						{ },
+						Some(Res::NoSolution) => continue,
+					}
+
+					if cost < min_cost
+					{
+						min_cost = cost;
+						min_action = Some(MyAction { pos: new_pos, index, kind: OutAction::Plant(plant) });
+					}
 				}
 			}
 
@@ -197,6 +237,11 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 	{
 		for index in 0..state.seeds.len()
 		{
+			if !force_compute && start.elapsed() >= time_limit
+			{
+				return None;
+			}
+
 			let seed = state.seeds[index];
 			let dist = distance(pos, seed);
 
@@ -212,13 +257,13 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 			state.robot_pos = seed;
 			state.seeds.remove(index);
 
-			let res = find_best_action(input, memo, state, min_cost - cost, depth); // collecting a seed doesn't increase the depth
+			let res = find_best_action(input, memo, state, min_cost - cost, start, time_limit, depth, force_compute); // collecting a seed doesn't increase the depth
 			
 			state.seed_storage = old_seed_storage;
 			state.robot_pos = pos;
 			state.seeds.insert(index, seed);
 
-			match res
+			match res?
 			{
 				Res::SolutionFound { cost: child_cost, .. } =>
 				{
@@ -252,13 +297,16 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 
 	memo.insert((state.clone(), depth), (max_cost, res));
 
-	res
+	Some(res)
 }
 
 fn main() -> serde_json::Result<()>
 {
-	let depth: u32 = std::env::args().nth(2).unwrap().parse().unwrap();
+	let time_limit: f32 = std::env::args().nth(2).unwrap().parse().unwrap();
 	let input = read_input()?;
+
+	let time_per_action = Duration::from_secs_f32(time_limit / input.plants.len() as f32);
+	dbg!(time_per_action);
 
 	let mut state = State
 	{
@@ -276,7 +324,7 @@ fn main() -> serde_json::Result<()>
 	while !state.plants.is_empty()
 	{
 		let max_dist = input.max_distance as i32 - distance_traveled+1;
-		let Res::SolutionFound { cost, action } = find_best_action(&input, &mut memo, &mut state, max_dist, depth)
+		let Res::SolutionFound { cost, action } = find_best_action_time_limit(&input, &mut memo, &mut state, max_dist, time_per_action)
 		else
 		{
 			break;
@@ -314,8 +362,6 @@ fn main() -> serde_json::Result<()>
 	}
 
 	write_output(&moves, input.plants.len() - state.plants.len(), distance_traveled);
-
-	println!("END");
 
 	Ok(())
 }

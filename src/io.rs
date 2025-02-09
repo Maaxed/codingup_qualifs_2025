@@ -40,6 +40,42 @@ pub fn read_input() -> serde_json::Result<Input>
 	serde_json::from_reader(reader)
 }
 
+pub fn read_output() -> Vec<OutAction>
+{
+	let file_name = arg_file_name();
+	let exe_name = std::env::args().nth(2).unwrap();
+	let reader = BufReader::new(File::open(format!("output/{file_name}_{exe_name}.json")).unwrap());
+
+	let moves_str: Vec<String> = serde_json::from_reader(reader).unwrap();
+
+	let mut actions = Vec::new();
+
+	for action_str in moves_str
+	{
+		if let Some(move_action) = action_str.strip_prefix("MOVE ")
+		{
+			let (x, y) = move_action.split_once(' ').unwrap();
+			let x: i32 = x.parse().unwrap();
+			let y: i32 = y.parse().unwrap();
+			actions.push(OutAction::Move([x, y]));
+		}
+		else if let Some(plant_action) = action_str.strip_prefix("PLANT ")
+		{
+			let (x, y) = plant_action.split_once(' ').unwrap();
+			let x: i32 = x.parse().unwrap();
+			let y: i32 = y.parse().unwrap();
+			actions.push(OutAction::Plant([x, y]));
+		}
+		else
+		{
+			assert_eq!(action_str, "COLLECT");
+			actions.push(OutAction::Collect);
+		}
+	}
+
+	actions
+}
+
 pub fn write_output(actions: &[OutAction], plant_count: usize, distance_traveled: i32)
 {
 	println!("Solution found in {} moves", actions.len());

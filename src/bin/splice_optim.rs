@@ -30,7 +30,7 @@ fn splice_optim(input: &Input, actions: &mut [Action]) -> bool
 {
 	let (plant_count, distance_traveled) = resolve_fast(input, actions);
 	
-	let value = (plant_count, -distance_traveled);
+	let mut value = (plant_count, -distance_traveled);
 
 	let mut res = false;
 	for slice_start in 0..actions.len()-2
@@ -53,6 +53,7 @@ fn splice_optim(input: &Input, actions: &mut [Action]) -> bool
 
 				if new_value > value
 				{
+					value = new_value;
 					println!("Optim found {new_value:?}");
 					res = true;
 				}

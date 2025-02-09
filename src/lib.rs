@@ -228,13 +228,13 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 		action_index: 0,
 	};
 
-	priority_queue.push(WeightedNode(0, ([0, 0], initial_state)));
+	priority_queue.push(WeightedNode(0, (0, initial_state)));
 
 	let mut explored: HashSet<State> = HashSet::new();
 
 	let mut end_point = None;
 
-	while let Some(WeightedNode(distance_traveled, (back_pos, state))) = priority_queue.pop()
+	while let Some(WeightedNode(distance_traveled, (dist_back, state))) = priority_queue.pop()
 	{
 		if !explored.insert(state)
 		{
@@ -243,7 +243,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 
 		if state.action_index >= actions.len()
 		{
-			end_point = Some((distance_traveled, back_pos, state));
+			end_point = Some((distance_traveled, dist_back, state));
 			break;
 		}
 
@@ -251,8 +251,6 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 
 		let action = actions[state.action_index];
 		let action_index = state.action_index + 1;
-
-		let back = state.robot_pos;
 
 		match action.kind
 		{
@@ -266,7 +264,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 				{
 					// No move required
 					priority_queue.push(WeightedNode(distance_traveled, (
-						back,
+						0,
 						State
 						{
 							robot_pos: pos,
@@ -281,7 +279,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 
 					if new_distance_traveled as u32 > input.max_distance
 					{
-						end_point = Some((distance_traveled, back_pos, state));
+						end_point = Some((distance_traveled, dist_back, state));
 						break;
 					}
 					
@@ -293,7 +291,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 						let new_pos = [action.pos[0] - sign[0] * dx, action.pos[1] - sign[1] * dy];
 	
 						priority_queue.push(WeightedNode(new_distance_traveled, (
-							back,
+							0,
 							State
 							{
 								robot_pos: new_pos,
@@ -310,12 +308,12 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 
 				if new_distance_traveled as u32 > input.max_distance
 				{
-					end_point = Some((distance_traveled, back_pos, state));
+					end_point = Some((distance_traveled, dist_back, state));
 					break;
 				}
 
 				priority_queue.push(WeightedNode(new_distance_traveled, (
-					back,
+					dist_back + dist,
 					State
 					{
 						robot_pos: action.pos,
@@ -326,7 +324,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 		}
 	}
 
-	let Some((mut distance_traveled, prev_pos, state)) = end_point
+	let Some((mut distance_traveled, dist_back, state)) = end_point
 	else
 	{
 		return (0, 0);
@@ -342,10 +340,7 @@ pub fn resolve_fast(input: &Input, actions: &[Action]) -> (usize, i32)
 		}
 	}
 
-	if state.action_index > 0 && actions[state.action_index-1].kind == ActionKind::Collect
-	{
-		distance_traveled -= distance(state.robot_pos, prev_pos);
-	}
+	distance_traveled -= dist_back;
 
 	(plant_count, distance_traveled)
 }

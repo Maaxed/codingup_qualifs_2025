@@ -40,7 +40,7 @@ pub fn distance(a: [i32; 2], b: [i32; 2]) -> i32
 }
 
 
-pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
+pub fn resolve(input: &Input, actions: &[Action]) -> (VecDeque<OutAction>, usize, i32)
 {
 	#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 	struct State
@@ -174,12 +174,14 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 	let Some((mut distance_traveled, state)) = end_point
 	else
 	{
-		return (0, VecDeque::new());
+		return (VecDeque::new(), 0, 0);
 	};
 	
 	let mut moves = VecDeque::new();
 
 	let mut state = &state;
+
+	let mut plant_count = 0;
 
 	let mut back = &prev_move[state];
 	while let Some(b) = back
@@ -190,6 +192,11 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 		}
 		else
 		{
+			if b.action.kind == ActionKind::Plant
+			{
+				plant_count += 1;
+			}
+
 			moves.push_front(b.action.as_output());
 			if state.robot_pos != b.old_state.robot_pos
 			{
@@ -201,5 +208,5 @@ pub fn resolve(input: &Input, actions: &[Action]) -> (u32, VecDeque<OutAction>)
 		back = &prev_move[state];
 	}
 
-	(distance_traveled as u32, moves)
+	(moves, plant_count, distance_traveled)
 }

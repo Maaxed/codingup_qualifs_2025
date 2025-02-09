@@ -40,16 +40,24 @@ pub fn read_input() -> serde_json::Result<Input>
 	serde_json::from_reader(reader)
 }
 
-pub fn write_output(actions: &[OutAction])
+pub fn write_output(actions: &[OutAction], plant_count: usize, distance_traveled: i32)
 {
-	println!("Solution found in {} moves!", actions.len());
+	println!("Solution found in {} moves", actions.len());
+
+	dbg!(plant_count);
+	dbg!(distance_traveled);
+
 	let mut exe_name = std::env::current_exe().unwrap().file_stem().unwrap().to_str().unwrap().to_owned();
 	let file_name = arg_file_name();
 	for arg in std::env::args().skip(2)
 	{
 		write!(&mut exe_name, "_{arg}").unwrap();
 	}
-	let buffer = BufWriter::new(File::create(format!("output/{file_name}_{exe_name}.json")).unwrap());
+	let output_base_name = format!("output/{file_name}_{exe_name}");
+
+	std::fs::write(format!("{output_base_name}.meta"), format!("{plant_count} {distance_traveled}")).unwrap();
+
+	let buffer = BufWriter::new(File::create(format!("{output_base_name}.json")).unwrap());
 	let mut moves_str = Vec::new();
 	for action in actions
 	{

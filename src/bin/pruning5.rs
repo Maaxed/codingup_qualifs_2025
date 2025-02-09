@@ -139,7 +139,7 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 					{
 						state.plants.insert(index, plant);
 						continue;
-					}
+					},
 				}
 
 				if cost < min_cost
@@ -154,31 +154,36 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 
 				// Move is required
 				let sign = [delta[0].signum(), delta[1].signum()];
-				for dx in i32::max(0, input.range - delta[1].abs())..=i32::min(delta[0].abs(), input.range)
+				let min = i32::max(0, input.range - delta[1].abs());
+				let max = i32::min(delta[0].abs(), input.range);
+				let dx = (min + max) / 2;
+
+				let dy = input.range - dx;
+
+				let new_pos = [plant[0] - sign[0] * dx, plant[1] - sign[1] * dy];
+				state.robot_pos = new_pos;
+				
+				let mut cost = cost;
+
+				match find_best_action(input, memo, state, min_cost - cost, depth-1)
 				{
-					let dy = input.range - dx;
-
-					let new_pos = [plant[0] - sign[0] * dx, plant[1] - sign[1] * dy];
-					state.robot_pos = new_pos;
-					
-					let mut cost = cost;
-
-					match find_best_action(input, memo, state, min_cost - cost, depth-1)
+					Res::SolutionFound { cost: child_cost, .. } =>
 					{
-						Res::SolutionFound { cost: child_cost, .. } =>
-						{
-							cost += child_cost;
-						},
-						Res::Solved =>
-						{ },
-						Res::NoSolution => continue,
-					}
-
-					if cost < min_cost
+						cost += child_cost;
+					},
+					Res::Solved =>
+					{ },
+					Res::NoSolution =>
 					{
-						min_cost = cost;
-						min_action = Some(MyAction { pos: new_pos, index, kind: OutAction::Plant(plant) });
-					}
+						state.plants.insert(index, plant);
+						continue;
+					},
+				}
+
+				if cost < min_cost
+				{
+					min_cost = cost;
+					min_action = Some(MyAction { pos: new_pos, index, kind: OutAction::Plant(plant) });
 				}
 			}
 
@@ -266,10 +271,10 @@ fn main() -> serde_json::Result<()>
 	let mut distance_traveled = 0;
 
 	let mut moves = Vec::new();
-	let mut memo = HashMap::new();
 
 	while !state.plants.is_empty()
 	{
+		let mut memo = HashMap::new();
 		let max_dist = input.max_distance as i32 - distance_traveled+1;
 		let Res::SolutionFound { cost, action } = find_best_action(&input, &mut memo, &mut state, max_dist, depth)
 		else
@@ -277,7 +282,7 @@ fn main() -> serde_json::Result<()>
 			break;
 		};
 
-		//if state.plants.len() % 10 == 0
+		if state.plants.len() % 10 == 0
 		{
 			println!("End step {} {} {} {}", state.plants.len(), max_dist, cost, memo.len());
 		}
@@ -309,6 +314,8 @@ fn main() -> serde_json::Result<()>
 	}
 
 	write_output(&moves, input.plants.len() - state.plants.len(), distance_traveled);
+
+	println!("END");
 
 	Ok(())
 }

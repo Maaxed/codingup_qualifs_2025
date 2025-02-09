@@ -182,7 +182,7 @@ fn main() -> serde_json::Result<()>
 
 	while !state.plants.is_empty()
 	{
-		if state.plants.len() % 100 == 0
+		if state.plants.len() % 10 == 0
 		{
 			dbg!(state.plants.len());
 		}
@@ -223,11 +223,9 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	let (dist, mut res) = resolve(&input, &moves);
+	let (mut res, plant_count, distance_traveled) = resolve(&input, &moves);
 
-	dbg!(dist);
-
-	write_output(res.make_contiguous());
+	write_output(res.make_contiguous(), plant_count, distance_traveled);
 
 	Ok(())
 }

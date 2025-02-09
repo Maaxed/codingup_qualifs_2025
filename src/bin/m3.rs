@@ -27,6 +27,8 @@ fn main() -> serde_json::Result<()>
 	// We assume that there is a solution that plants all seeds
 	// Use Dijkstra's algorithm
 
+	let plant_count = input.plants.len();
+
 	let mut priority_queue = BinaryHeap::new();
 
 	let mut seed_set: HashSet<Rc<[[i32;2]]>> = HashSet::new();
@@ -83,7 +85,7 @@ fn main() -> serde_json::Result<()>
 				back = &prev_move[state];
 			}
 
-			write_output(moves.make_contiguous());
+			write_output(moves.make_contiguous(), plant_count, distance_traveled);
 			return Ok(())
 		}
 

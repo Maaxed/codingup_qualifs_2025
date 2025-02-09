@@ -69,9 +69,9 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	let (_dist, mut res) = resolve(&input, &moves);
+	let (mut res, plant_count, distance_traveled) = resolve(&input, &moves);
 
-	write_output(res.make_contiguous());
+	write_output(res.make_contiguous(), plant_count, distance_traveled);
 
 	Ok(())
 }

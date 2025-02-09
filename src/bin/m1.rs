@@ -24,6 +24,8 @@ fn main() -> serde_json::Result<()>
 {
 	let input = read_input()?;
 
+	let plant_count = input.plants.len();
+
 	let mut min_pos = [i32::MAX; 2];
 
 	let mut max_pos = [i32::MIN; 2];
@@ -123,7 +125,7 @@ fn main() -> serde_json::Result<()>
 
 		if state.plants.is_empty()
 		{
-			write_output(&moves);
+			write_output(&moves, plant_count, (input.max_distance - remaining_distance) as i32);
 			return Ok(())
 		}
 

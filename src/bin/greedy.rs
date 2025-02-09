@@ -14,6 +14,8 @@ fn main() -> serde_json::Result<()>
 {
 	let input = read_input()?;
 
+	let plant_count = input.plants.len();
+
 	let mut state = State
 	{
 		robot_pos: [0, 0],
@@ -91,7 +93,7 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	write_output(&moves);
+	write_output(&moves, plant_count, (input.max_distance - state.remaining_distance) as i32);
 
 	Ok(())
 }

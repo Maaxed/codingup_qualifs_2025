@@ -281,7 +281,7 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	write_output(&moves, input.plants.len() - state.plants.len(), distance_traveled);
+	write_output(&moves, None, input.plants.len() - state.plants.len(), distance_traveled);
 
 	Ok(())
 }

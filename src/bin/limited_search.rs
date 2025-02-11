@@ -1,4 +1,4 @@
-use codingup_qualifs::{distance, io::*, resolve, Action, ActionKind};
+use codingup_qualifs::{distance, io::*, solve_and_write_output, Action, ActionKind};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct State
@@ -154,9 +154,7 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	let (mut res, plant_count, distance_traveled) = resolve(&input, &moves);
-
-	write_output(res.make_contiguous(), plant_count, distance_traveled);
+	solve_and_write_output(&input, &moves);
 
 	Ok(())
 }

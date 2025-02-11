@@ -93,7 +93,7 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	write_output(&moves, plant_count, (input.max_distance - state.remaining_distance) as i32);
+	write_output(&moves, None, plant_count, (input.max_distance - state.remaining_distance) as i32);
 
 	Ok(())
 }

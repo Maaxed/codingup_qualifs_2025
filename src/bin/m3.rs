@@ -85,7 +85,7 @@ fn main() -> serde_json::Result<()>
 				back = &prev_move[state];
 			}
 
-			write_output(moves.make_contiguous(), plant_count, distance_traveled);
+			write_output(moves.make_contiguous(), None, plant_count, distance_traveled);
 			return Ok(())
 		}
 

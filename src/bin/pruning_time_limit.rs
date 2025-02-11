@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::time::{Duration, Instant};
 
-use codingup_qualifs::{distance, io::*};
+use codingup_qualifs::{distance, io::*, Action, ActionKind};
 use hashbrown::{Equivalent, HashMap};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -319,6 +319,7 @@ fn main() -> serde_json::Result<()>
 	let mut distance_traveled = 0;
 
 	let mut moves = Vec::new();
+	let mut actions = Vec::new();
 	let mut memo = HashMap::new();
 
 	while !state.plants.is_empty()
@@ -346,13 +347,15 @@ fn main() -> serde_json::Result<()>
 
 		match action.kind
 		{
-			OutAction::Plant(_) =>
+			OutAction::Plant(pos) =>
 			{
+				actions.push(Action{ pos, kind: ActionKind::Plant });
 				state.seed_storage -= 1;
 				state.plants.remove(action.index);
 			},
 			OutAction::Collect =>
 			{
+				actions.push(Action{ pos: action.pos, kind: ActionKind::Collect });
 				state.seed_storage = input.seed_capacity;
 				state.seeds.remove(action.index);
 			},
@@ -361,7 +364,7 @@ fn main() -> serde_json::Result<()>
 		}
 	}
 
-	write_output(&moves, input.plants.len() - state.plants.len(), distance_traveled);
+	write_output(&moves, Some(&actions), input.plants.len() - state.plants.len(), distance_traveled);
 
 	Ok(())
 }

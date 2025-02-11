@@ -1,9 +1,10 @@
 use std::fs::File;
-use std::io::{BufReader, BufWriter};
+use std::io::{BufRead, BufReader, BufWriter};
 use std::fmt::Write;
 
 use serde::Deserialize;
 
+use crate::Action;
 
 #[derive(Deserialize)]
 pub struct Input
@@ -40,7 +41,7 @@ pub fn read_input() -> serde_json::Result<Input>
 	serde_json::from_reader(reader)
 }
 
-pub fn read_output() -> Vec<OutAction>
+/*pub fn read_output() -> Vec<OutAction>
 {
 	let file_name = arg_file_name();
 	let exe_name = std::env::args().nth(2).unwrap();
@@ -74,11 +75,21 @@ pub fn read_output() -> Vec<OutAction>
 	}
 
 	actions
+}*/
+
+pub fn read_output() -> Vec<Action>
+{
+	let file_name = arg_file_name();
+	let exe_name = std::env::args().nth(2).unwrap();
+	let mut reader = BufReader::new(File::open(format!("output/{file_name}_{exe_name}.meta")).unwrap());
+	reader.skip_until(b'\n').unwrap();
+
+	serde_json::from_reader(reader).unwrap()
 }
 
-pub fn write_output(actions: &[OutAction], plant_count: usize, distance_traveled: i32)
+pub fn write_output(out_actions: &[OutAction], actions: Option<&[Action]>, plant_count: usize, distance_traveled: i32)
 {
-	println!("Solution found in {} moves", actions.len());
+	println!("Solution found in {} moves", out_actions.len());
 
 	dbg!(plant_count);
 	dbg!(distance_traveled);
@@ -91,11 +102,19 @@ pub fn write_output(actions: &[OutAction], plant_count: usize, distance_traveled
 	}
 	let output_base_name = format!("output/{file_name}_{exe_name}");
 
-	std::fs::write(format!("{output_base_name}.meta"), format!("{plant_count} {distance_traveled}")).unwrap();
+	{
+		let mut buffer = BufWriter::new(File::create(format!("{output_base_name}.meta")).unwrap());
+		use std::io::Write;
+		writeln!(buffer, "{plant_count} {distance_traveled}").unwrap();
+		if let Some(actions) = actions
+		{
+			serde_json::to_writer_pretty(buffer, actions).unwrap();
+		}
+	}
 
 	let buffer = BufWriter::new(File::create(format!("{output_base_name}.json")).unwrap());
 	let mut moves_str = Vec::new();
-	for action in actions
+	for action in out_actions
 	{
 		moves_str.push(match action
 		{

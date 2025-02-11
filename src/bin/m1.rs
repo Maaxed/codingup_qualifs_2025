@@ -125,7 +125,7 @@ fn main() -> serde_json::Result<()>
 
 		if state.plants.is_empty()
 		{
-			write_output(&moves, plant_count, (input.max_distance - remaining_distance) as i32);
+			write_output(&moves, None, plant_count, (input.max_distance - remaining_distance) as i32);
 			return Ok(())
 		}
 

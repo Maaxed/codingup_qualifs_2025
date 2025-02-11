@@ -1,10 +1,12 @@
 pub mod dijkstra;
 pub mod io;
+pub mod quantum;
 
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 
 use dijkstra::WeightedNode;
 use io::{Input, OutAction};
+use quantum::QPos;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -45,7 +47,7 @@ pub fn solve_and_write_output(input: &Input, actions: &[Action])
 {
 	let (mut res, plant_count, distance_traveled) = resolve(input, actions);
 
-	let (p, d) = resolve_faster(input, actions, true);
+	let (p, d) = resolve_q_fast(input, actions, true);
 
 	assert_eq!(plant_count, p);
 	assert_eq!(distance_traveled, d);
@@ -361,214 +363,196 @@ pub fn resolve_fast(input: &Input, actions: &[Action], limit_distance: bool) -> 
 
 
 
-pub fn resolve_faster(input: &Input, actions: &[Action], limit_distance: bool) -> (usize, i32)
+pub fn resolve_fast2(input: &Input, actions: &[Action], limit_distance: bool) -> (usize, i32)
 {
 	#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 	struct State
 	{
 		robot_pos: [i32; 2],
-		range: i32, // positive is up right, negative is up left diagonal
-		distance_traveled: i32,
-		distance_back: i32,
-		plant_count: usize,
+		action_index: usize,
 	}
 
-	let mut state = State
+	let mut priority_queue = BinaryHeap::new();
+
+	let initial_state = State
 	{
 		robot_pos: [0, 0],
-		range: 0,
-		distance_traveled: 0,
-		distance_back: 0,
-		plant_count: 0,
+		action_index: 0,
 	};
 
-	for action in actions
+	priority_queue.push(WeightedNode(0, (0, initial_state)));
+
+	let mut explored: HashSet<State> = HashSet::new();
+
+	let mut end_point: Option<(i32, i32, State)> = None;
+
+	while let Some(WeightedNode(distance_traveled, (dist_back, state))) = priority_queue.pop()
 	{
+		if !explored.insert(state)
+		{
+			continue;
+		}
+
+		if state.action_index >= actions.len()
+		{
+			if let Some(old_end_point) = end_point
+			{
+				if (state.action_index, dist_back - distance_traveled) <= (old_end_point.2.action_index, old_end_point.1 - old_end_point.0)
+				{
+					continue;
+				}
+			}
+			end_point = Some((distance_traveled, dist_back, state));
+			continue;
+		}
+
 		let pos = state.robot_pos;
-		let range = state.range;
+
+		let action = actions[state.action_index];
+		let action_index = state.action_index + 1;
+
 		match action.kind
 		{
 			ActionKind::Plant =>
 			{
-				let sign = range.signum();
-				let sign = if sign == 0 { 1 } else { sign };
+				let delta = [action.pos[0] - pos[0], action.pos[1] - pos[1]];
+				let abs = [delta[0].abs(), delta[1].abs()];
+				let dist = abs[0] + abs[1];
 
-				let range = range.abs();
-
-				let delta = [(action.pos[0] - pos[0]) * sign, action.pos[1] - pos[1]];
-
-				let dist1 = distance(delta, [0;2]);
-				let dist2 = distance(delta, [range; 2]);
-
-				let dist = i32::min(dist1, dist2) - input.range;
-
-				if limit_distance && (state.distance_traveled + dist.max(0)) as u32 > input.max_distance
-				{
-					break;
-				}
-
-				state.plant_count += 1;
-				state.distance_back = 0;
-
-				if dist <= 0
+				if dist <= input.range
 				{
 					// No move required
-					// Decrease range
-					let d1 = dist1 - input.range;
-					let d2 = dist2 - input.range;
-					if d1 > 0
-					{
-						let d = (d1 + 1) / 2;
-						state.robot_pos[0] += d * sign;
-						state.robot_pos[1] += d;
-						state.range -= d;
-					}
-					else if d2 > 0
-					{
-						let d = (d2 + 1) / 2;
-						state.range -= d;
-					}
+					priority_queue.push(WeightedNode(distance_traveled, (
+						0,
+						State
+						{
+							robot_pos: pos,
+							action_index,
+						},
+					)));
 				}
 				else
 				{
 					// Move is required
+					let new_distance_traveled = distance_traveled + dist - input.range;
 
-					state.distance_traveled += dist;
+					if limit_distance && new_distance_traveled as u32 > input.max_distance
+					{
+						if let Some(old_end_point) = end_point
+						{
+							if (state.action_index, dist_back - distance_traveled) <= (old_end_point.2.action_index, old_end_point.1 - old_end_point.0)
+							{
+								continue;
+							}
+						}
+						end_point = Some((distance_traveled, dist_back, state));
+						continue;
+					}
 					
-					if delta[0] <= 0 && delta[1] <= 0
+					let sign = [delta[0].signum(), delta[1].signum()];
+					for dx in i32::max(0, input.range - abs[1])..=i32::min(abs[0], input.range)
 					{
-						// Partial top right
+						let dy = input.range - dx;
 
-						let mut new_delta = [delta[0] + input.range, delta[1]];
-						let mut new_range = input.range;
-
-						if new_delta[0] > 0
-						{
-							// Clamp
-							let cd = new_delta[0];
-							new_delta[0] -= cd;
-							new_delta[1] += cd;
-							new_range -= cd;
-						}
-						if new_delta[1] + new_range > 0
-						{
-							// Clamp
-							let cd = new_delta[1] + new_range;
-							new_range -= cd;
-						}
-
-						state.robot_pos = [pos[0] + new_delta[0] * sign, pos[1] + new_delta[1]];
-						state.range = -sign * new_range;
-					}
-					else if delta[0] >= range && delta[1] >= range
-					{
-						// Partial bottom left
-
-						let mut new_delta = [delta[0], delta[1] - input.range];
-						let mut new_range = input.range;
-
-						if new_delta[1] < range
-						{
-							// Clamp
-							let cd = range - new_delta[1];
-							new_delta[0] -= cd;
-							new_delta[1] += cd;
-							new_range -= cd;
-						}
-						if new_delta[0] - new_range < range
-						{
-							// Clamp
-							let cd = range - (new_delta[0] - new_range);
-							new_range -= cd;
-						}
-
-						state.robot_pos = [pos[0] + new_delta[0] * sign, pos[1] + new_delta[1]];
-						state.range = -sign * new_range;
-					}
-					else if delta[1] >= delta[0]
-					{
-						// Partial bottom right
-						
-						let mut new_delta = [delta[0], delta[1] - input.range];
-						let mut new_range = input.range;
-
-						if new_delta[1] < 0
-						{
-							// Clamp
-							let cd = -new_delta[1];
-							new_delta[0] += cd;
-							new_delta[1] += cd;
-							new_range -= cd;
-						}
-						if new_delta[0] + new_range > range
-						{
-							// Clamp
-							let cd = new_delta[0] + new_range - range;
-							new_range -= cd;
-						}
-
-						state.robot_pos = [pos[0] + new_delta[0] * sign, pos[1] + new_delta[1]];
-						state.range = sign * new_range;
-					}
-					else
-					{
-						// Partial top left
-						
-						let mut new_delta = [delta[0] - input.range, delta[1]];
-						let mut new_range = input.range;
-
-						if new_delta[0] < 0
-						{
-							// Clamp
-							let cd = -new_delta[0];
-							new_delta[0] += cd;
-							new_delta[1] += cd;
-							new_range -= cd;
-						}
-						if new_delta[1] + new_range > range
-						{
-							// Clamp
-							let cd = new_delta[1] + new_range - range;
-							new_range -= cd;
-						}
-
-						state.robot_pos = [pos[0] + new_delta[0] * sign, pos[1] + new_delta[1]];
-						state.range = sign * new_range;
+						let new_pos = [action.pos[0] - sign[0] * dx, action.pos[1] - sign[1] * dy];
+	
+						priority_queue.push(WeightedNode(new_distance_traveled, (
+							0,
+							State
+							{
+								robot_pos: new_pos,
+								action_index,
+							},
+						)));
 					}
 				}
 			},
 			ActionKind::Collect =>
 			{
-				let dist = if range == 0
+				let dist = distance(pos, action.pos);
+				let new_distance_traveled = distance_traveled + dist;
+
+				if limit_distance && new_distance_traveled as u32 > input.max_distance
 				{
-					distance(action.pos, pos)
-				}
-				else
-				{
-					let sign = range.signum();
-					let range = range.abs();
-
-					let delta = [(action.pos[0] - pos[0]) * sign, action.pos[1] - pos[1]];
-
-					let ref_pos = [delta[0].clamp(0, range); 2];
-
-					distance(delta, ref_pos)
-				};
-
-				if limit_distance && (state.distance_traveled + dist) as u32 > input.max_distance
-				{
-					break;
+					if let Some(old_end_point) = end_point
+					{
+						if (state.action_index, dist_back - distance_traveled) <= (old_end_point.2.action_index, old_end_point.1 - old_end_point.0)
+						{
+							continue;
+						}
+					}
+					end_point = Some((distance_traveled, dist_back, state));
+					continue;
 				}
 
-				state.robot_pos = action.pos;
-				state.range = 0;
-				state.distance_traveled += dist;
-				state.distance_back += dist;
+				priority_queue.push(WeightedNode(new_distance_traveled, (
+					dist_back + dist,
+					State
+					{
+						robot_pos: action.pos,
+						action_index,
+					},
+				)));
 			},
 		}
 	}
 
-	(state.plant_count, state.distance_traveled - state.distance_back)
+	let Some((mut distance_traveled, dist_back, state)) = end_point
+	else
+	{
+		return (0, 0);
+	};
+
+	let mut plant_count = 0;
+
+	for action in &actions[0..state.action_index]
+	{
+		if action.kind == ActionKind::Plant
+		{
+			plant_count += 1;
+		}
+	}
+
+	distance_traveled -= dist_back;
+
+	(plant_count, distance_traveled)
+}
+
+
+pub fn resolve_q_fast(input: &Input, actions: &[Action], limit_distance: bool) -> (usize, i32)
+{
+	let mut pos = QPos::default();
+	let mut distance_traveled = 0;
+	let mut distance_back = 0;
+	let mut plant_count = 0;
+
+	for action in actions
+	{
+		let (new_pos, dist) = pos.apply_action(input, action);
+		
+		if limit_distance && (distance_traveled + dist) as u32 > input.max_distance
+		{
+			break;
+		}
+
+		pos = new_pos;
+		distance_traveled += dist;
+
+		match action.kind
+		{
+			ActionKind::Plant =>
+			{
+				plant_count += 1;
+				distance_back = 0;
+			},
+			ActionKind::Collect =>
+			{
+				distance_back += dist;
+			},
+		}
+	}
+
+	(plant_count, distance_traveled - distance_back)
 }
 
 

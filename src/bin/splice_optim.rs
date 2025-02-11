@@ -1,5 +1,5 @@
 use codingup_qualifs::io::{read_input, read_output, Input};
-use codingup_qualifs::{resolve_fast, resolve_faster, solve_and_write_output, Action, ActionKind};
+use codingup_qualifs::{resolve_fast, resolve_q_fast, solve_and_write_output, Action, ActionKind};
 
 
 fn check_actions_at(input: &Input, actions: &[Action], index: usize) -> bool
@@ -60,7 +60,7 @@ fn splice_optim(input: &Input, actions: &mut [Action], max_size: usize)
 					}
 
 					let (plant_count, distance_traveled) = resolve_fast(input, actions, true);
-					let (plant_count1, distance_traveled1) = resolve_faster(input, actions, true);
+					let (plant_count1, distance_traveled1) = resolve_q_fast(input, actions, true);
 
 					if plant_count != plant_count1
 					{

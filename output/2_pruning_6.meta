@@ -1,0 +1,836 @@
+90 3969
+[
+  {
+    "pos": [
+      10,
+      33
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      21,
+      62
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      35,
+      54
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      56,
+      39
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      63,
+      26
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      56,
+      22
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      43,
+      23
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      3,
+      47
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      90,
+      58
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      89,
+      65
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      70,
+      81
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      57,
+      79
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      47,
+      108
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      56,
+      119
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      37,
+      129
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      1,
+      124
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      5,
+      148
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      0,
+      122
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      1,
+      152
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      18,
+      164
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      39,
+      168
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      54,
+      173
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      47,
+      178
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      26,
+      191
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      58,
+      189
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      93,
+      181
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      69,
+      167
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      95,
+      135
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      116,
+      134
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      86,
+      186
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      139,
+      184
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      171,
+      184
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      189,
+      188
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      202,
+      157
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      203,
+      145
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      215,
+      122
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      204,
+      124
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      203,
+      109
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      182,
+      105
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      182,
+      99
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      167,
+      91
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      163,
+      102
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      158,
+      81
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      150,
+      72
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      129,
+      68
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      140,
+      61
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      161,
+      75
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      218,
+      28
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      210,
+      29
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      192,
+      1
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      223,
+      8
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      283,
+      17
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      298,
+      12
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      293,
+      29
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      290,
+      60
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      255,
+      62
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      242,
+      73
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      238,
+      52
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      199,
+      74
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      247,
+      118
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      260,
+      117
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      275,
+      121
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      271,
+      130
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      267,
+      118
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      278,
+      140
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      296,
+      168
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      306,
+      162
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      278,
+      153
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      263,
+      166
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      263,
+      176
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      306,
+      191
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      236,
+      171
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      214,
+      156
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      138,
+      177
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      112,
+      143
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      120,
+      119
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      117,
+      97
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      12,
+      90
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      80,
+      103
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      82,
+      114
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      55,
+      102
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      112,
+      191
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      130,
+      82
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      23,
+      54
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      34,
+      22
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      154,
+      32
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      116,
+      13
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      174,
+      5
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      317,
+      4
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      388,
+      12
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      386,
+      13
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      350,
+      30
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      333,
+      31
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      388,
+      44
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      378,
+      62
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      380,
+      39
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      372,
+      82
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      390,
+      98
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      384,
+      115
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      355,
+      117
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      352,
+      133
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      360,
+      135
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      347,
+      98
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      334,
+      103
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      330,
+      106
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      321,
+      105
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      307,
+      105
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      292,
+      89
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      283,
+      94
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      339,
+      111
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      352,
+      165
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      341,
+      180
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      322,
+      184
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      340,
+      81
+    ],
+    "kind": "Collect"
+  },
+  {
+    "pos": [
+      381,
+      70
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      229,
+      128
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      322,
+      32
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      291,
+      135
+    ],
+    "kind": "Plant"
+  },
+  {
+    "pos": [
+      29,
+      154
+    ],
+    "kind": "Plant"
+  }
+]

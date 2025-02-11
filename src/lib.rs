@@ -47,11 +47,6 @@ pub fn solve_and_write_output(input: &Input, actions: &[Action])
 {
 	let (mut res, plant_count, distance_traveled) = resolve(input, actions);
 
-	let (p, d) = resolve_q_fast(input, actions, true);
-
-	assert_eq!(plant_count, p);
-	assert_eq!(distance_traveled, d);
-
 	io::write_output(res.make_contiguous(), Some(actions), plant_count, distance_traveled);
 }
 

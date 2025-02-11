@@ -26,7 +26,7 @@ pub enum OutAction
 	Collect,
 }
 
-fn arg_file_name() -> String
+pub fn arg_file_name() -> String
 {
 	let mut args = std::env::args();
 	args.next();

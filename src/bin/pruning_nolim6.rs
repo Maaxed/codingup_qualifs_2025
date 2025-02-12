@@ -14,6 +14,13 @@ struct State
 	plants: Vec<[i32;2]>,
 }
 
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+struct PrimState
+{
+	robot_pos: QPos,
+	plants: Vec<[i32;2]>,
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct MyAction
 {
@@ -33,7 +40,7 @@ pub enum Res
 	NoSolution,
 }
 
-fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state: &mut State, max_cost: i32, depth: u32) -> Res
+fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, memo_prim: &mut HashMap<PrimState, i32>, state: &mut State, max_cost: i32, depth: u32) -> Res
 {
 	if state.plants.is_empty()
 	{
@@ -93,9 +100,19 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 					return None;
 				}
 
-				state.plants.remove(index);
-				let prim = prim(input, new_pos, &state.plants) + dist;
-				state.plants.insert(index, plant);
+				let mut prim_state = PrimState
+				{
+					robot_pos: new_pos,
+					plants: state.plants.clone(),
+				};
+				prim_state.plants.remove(index);
+
+				let mut prim = *memo_prim.entry(prim_state).or_insert_with_key(|prim_state|
+				{
+					prim(input, new_pos, &prim_state.plants)
+				});
+
+				prim += dist;
 
 				if prim >= min_cost
 				{
@@ -126,7 +143,7 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 			state.robot_pos = new_pos;
 			state.plants.remove(index);
 
-			let res = find_best_action(input, memo, state, min_cost - cost, depth+1);
+			let res = find_best_action(input, memo, memo_prim, state, min_cost - cost, depth+1);
 			
 			state.plants.insert(index, plant);
 
@@ -164,7 +181,19 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 					return None;
 				}
 
-				let prim = prim(input, new_pos, &state.plants) + dist;
+
+				let prim_state = PrimState
+				{
+					robot_pos: new_pos,
+					plants: state.plants.clone(),
+				};
+
+				let mut prim = *memo_prim.entry(prim_state).or_insert_with_key(|prim_state|
+				{
+					prim(input, new_pos, &prim_state.plants)
+				});
+
+				prim += dist;
 
 				if prim >= min_cost
 				{
@@ -197,7 +226,7 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 			state.robot_pos = new_pos;
 			state.seeds.remove(index);
 
-			let res = find_best_action(input, memo, state, min_cost - cost, depth+1);
+			let res = find_best_action(input, memo, memo_prim, state, min_cost - cost, depth+1);
 			
 			state.seed_storage = old_seed_storage;
 			state.robot_pos = pos;
@@ -267,12 +296,13 @@ fn main() -> serde_json::Result<()>
 
 	let mut moves = Vec::new();
 	let mut memo = HashMap::new();
+	let mut memo_prim = HashMap::new();
 
 	let max_dist = 3270; // input.max_distance as i32
 
 	while !state.plants.is_empty()
 	{
-		let Res::SolutionFound { action, .. } = find_best_action(&input, &mut memo, &mut state, max_dist - distance_traveled+1, 0)
+		let Res::SolutionFound { action, .. } = find_best_action(&input, &mut memo, &mut memo_prim, &mut state, max_dist - distance_traveled+1, 0)
 		else
 		{
 			break;

@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
+use codingup_qualifs::prim::prim;
 use codingup_qualifs::quantum::QPos;
 use codingup_qualifs::{io::*, solve_and_write_output, Action, ActionKind};
 
@@ -81,22 +82,43 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 	{
 		state.seed_storage -= 1;
 
-		let mut plants: Vec<usize> = (0..state.plants.len()).collect();
-		plants.sort_unstable_by_key(|&index|
+		let mut plants: Vec<(usize, i32)> = (0..state.plants.len())
+			.filter_map(|index|
+			{
+				let plant = state.plants[index];
+				let (new_pos, dist) = pos.apply_plant(input, plant);
+
+				if dist >= min_cost
+				{
+					return None;
+				}
+
+				state.plants.remove(index);
+				let prim = prim(input, new_pos, &state.plants) + dist;
+				state.plants.insert(index, plant);
+
+				if prim >= min_cost
+				{
+					return None;
+				}
+
+				Some((index, prim))
+			})
+			.collect();
+
+		plants.sort_unstable_by_key(|(_index, prim)|
 		{
-			let plant = state.plants[index];
-			let (_new_pos, dist) = pos.apply_plant(input, plant);
-			-dist
+			-*prim
 		});
 
-		for index in plants
+		for (index, prim) in plants
 		{
 			let plant = state.plants[index];
 			let (new_pos, dist) = pos.apply_plant(input, plant);
 			
 			let mut cost = dist;
 			
-			if cost >= min_cost // we are worst even without checking the children nodes, prune this branch
+			if prim >= min_cost // we are worst even without checking the children nodes, prune this branch
 			{
 				continue;
 			}
@@ -131,23 +153,41 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 
 	if state.seed_storage < input.seed_capacity
 	{
+		let mut seeds: Vec<(usize, i32)> = (0..state.seeds.len())
+			.filter_map(|index|
+			{
+				let seed = state.seeds[index];
+				let (new_pos, dist) = pos.apply_seed(seed);
+
+				if dist >= min_cost
+				{
+					return None;
+				}
+
+				let prim = prim(input, new_pos, &state.plants) + dist;
+
+				if prim >= min_cost
+				{
+					return None;
+				}
+
+				Some((index, prim))
+			})
+			.collect();
 		
-		let mut seeds: Vec<usize> = (0..state.seeds.len()).collect();
-		seeds.sort_unstable_by_key(|&index|
+		seeds.sort_unstable_by_key(|(_index, prim)|
 		{
-			let seed = state.seeds[index];
-			let (_new_pos, dist) = pos.apply_seed(seed);
-			-dist
+			-*prim
 		});
 
-		for index in seeds
+		for (index, prim) in seeds
 		{
 			let seed = state.seeds[index];
 			let (new_pos, dist) = pos.apply_seed(seed);
 
 			let mut cost = dist;
 
-			if cost >= min_cost // we are worst even without checking the children nodes, prune this branch
+			if prim >= min_cost // we are worst even without checking the children nodes, prune this branch
 			{
 				continue;
 			}
@@ -195,9 +235,9 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 		Res::NoSolution
 	};
 
-	if depth <= 8
+	if depth <= 3
 	{
-		dbg!(depth);
+		dbg!(depth, res, max_cost);
 	}
 
 	/*if memo.len() % 100000 == 0
@@ -227,9 +267,11 @@ fn main() -> serde_json::Result<()>
 	let mut moves = Vec::new();
 	let mut memo = HashMap::new();
 
+	let max_dist = 3270; // input.max_distance as i32
+
 	while !state.plants.is_empty()
 	{
-		let Res::SolutionFound { action, .. } = find_best_action(&input, &mut memo, &mut state, input.max_distance as i32 - distance_traveled+1, 0)
+		let Res::SolutionFound { action, .. } = find_best_action(&input, &mut memo, &mut state, max_dist - distance_traveled+1, 0)
 		else
 		{
 			break;

@@ -32,7 +32,7 @@ pub enum Res
 	NoSolution,
 }
 
-fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state: &mut State, max_cost: i32) -> Res
+fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state: &mut State, max_cost: i32, depth: u32) -> Res
 {
 	if state.plants.is_empty()
 	{
@@ -95,7 +95,7 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 			state.robot_pos = new_pos;
 			state.plants.remove(index);
 
-			let res = find_best_action(input, memo, state, min_cost - cost);
+			let res = find_best_action(input, memo, state, min_cost - cost, depth+1);
 			
 			state.plants.insert(index, plant);
 
@@ -139,7 +139,7 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 			state.robot_pos = new_pos;
 			state.seeds.remove(index);
 
-			let res = find_best_action(input, memo, state, min_cost - cost);
+			let res = find_best_action(input, memo, state, min_cost - cost, depth+1);
 			
 			state.seed_storage = old_seed_storage;
 			state.robot_pos = pos;
@@ -177,9 +177,9 @@ fn find_best_action(input: &Input, memo: &mut HashMap<State, (i32, Res)>, state:
 		Res::NoSolution
 	};
 
-	if memo.len() % 100000 == 0
+	if depth <= 19
 	{
-		dbg!(memo.len(), max_cost);
+		dbg!(depth);
 	}
 
 	memo.insert(state.clone(), (max_cost, res));
@@ -206,7 +206,7 @@ fn main() -> serde_json::Result<()>
 
 	while !state.plants.is_empty()
 	{
-		let Res::SolutionFound { action, .. } = find_best_action(&input, &mut memo, &mut state, input.max_distance as i32 - distance_traveled+1)
+		let Res::SolutionFound { action, .. } = find_best_action(&input, &mut memo, &mut state, input.max_distance as i32 - distance_traveled+1, 0)
 		else
 		{
 			break;

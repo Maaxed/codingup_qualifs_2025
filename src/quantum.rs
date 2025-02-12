@@ -160,21 +160,21 @@ impl QPos
 		(new_state, dist.max(0))
 	}
 
-	pub fn apply_seed(&self, plant_pos: [i32; 2]) -> (Self, i32)
+	pub fn apply_seed(&self, seed_pos: [i32; 2]) -> (Self, i32)
 	{
 		let pos = self.robot_pos;
 		let range = self.range;
 
 		let dist = if range == 0
 		{
-			distance(plant_pos, pos)
+			distance(seed_pos, pos)
 		}
 		else
 		{
 			let sign = range.signum();
 			let range = range.abs();
 
-			let delta = [(plant_pos[0] - pos[0]) * sign, plant_pos[1] - pos[1]];
+			let delta = [(seed_pos[0] - pos[0]) * sign, seed_pos[1] - pos[1]];
 
 			let ref_pos = [delta[0].clamp(0, range); 2];
 
@@ -184,7 +184,7 @@ impl QPos
 		(
 			QPos
 			{
-				robot_pos: plant_pos,
+				robot_pos: seed_pos,
 				range: 0,
 			}
 			,

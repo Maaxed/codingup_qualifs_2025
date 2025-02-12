@@ -1,6 +1,7 @@
 pub mod dijkstra;
 pub mod io;
 pub mod quantum;
+pub mod prim;
 
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
 

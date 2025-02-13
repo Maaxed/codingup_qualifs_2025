@@ -62,6 +62,7 @@ fn find_best_action_time_limit(input: &Input, memo: &mut HashMap<(State, u32), (
 		}
 		else
 		{
+			dbg!(i);
 			break;
 		}
 	}

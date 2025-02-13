@@ -7,20 +7,20 @@
 		{
 			"type": "lldb",
 			"request": "launch",
-			"name": "Debug executable 'pruning_nolim3'",
+			"name": "Debug executable 'pruning_time_limit_prim'",
 			"cargo": {
 				"args": [
 					"build",
-					"--bin=pruning_nolim3",
+					"--bin=pruning_nolim7",
 					"--package=codingup_qualifs"
 				],
 				"filter": {
-					"name": "pruning_nolim3",
+					"name": "pruning_nolim7",
 					"kind": "bin"
 				}
 			},
 			"args": [
-				"1"
+				"2", "59"
 			],
 			"cwd": "${workspaceFolder}"
 		}

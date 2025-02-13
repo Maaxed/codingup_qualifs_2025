@@ -72,43 +72,48 @@ pub fn prim(input: &Input, pos: QPos, plants: &[[i32;2]]) -> i32
 
 
 // prim's algorithm
-pub fn prim2(input: &Input, pos: QPos, plants: &[[i32;2]], seeds: &[[i32;2]]) -> i32
+pub fn prim2(input: &Input, pos: QPos, plants: &[[i32;2]]) -> i32
 {
 	if plants.is_empty()
 	{
 		return 0;
 	}
 
-	let mut graph: HashSet<usize> = (0..plants.len()).collect();
-	let mut tree = vec![(pos, get_min(input, pos, &graph, plants).unwrap())];
+	let mut graph: Vec<(usize, usize, i32)> = (0..plants.len())
+		.map(|index|
+		{
+			let (_, dist) = pos.apply_plant(input, plants[index]);
+			(index, 0, dist)
+		})
+		.collect();
+	let mut tree = vec![pos];
 
-	let mut tree_dist = compute_tree(input, &mut tree, &mut graph, plants);
+	let mut tree_dist = 0;
+
+	for _i in 0..plants.len()
+	{
+		let (best_graph_index, (best_plant_index, best_tree_index, _dist)) = graph.iter().enumerate().min_by_key(|(_, (_, _, dist))| *dist).unwrap();
+
+		let (new_pos, new_dist) = tree[*best_tree_index].apply_plant(input, plants[*best_plant_index]);
+
+		graph.swap_remove(best_graph_index);
+
+		tree_dist += new_dist;
+		tree.push(new_pos);
+
+		for (plant_index, tree_index, dist) in graph.iter_mut()
+		{
+			let (_, new_dist) = new_pos.apply_plant(input, plants[*plant_index]);
+			if new_dist < *dist
+			{
+				*tree_index = tree.len()-1;
+				*dist = new_dist;
+			}
+		}
+	}
 
 	assert!(graph.is_empty());
 	assert_eq!(tree.len(), plants.len()+1);
-
-	let collect_count = ((plants.len().max(1) - 1) / input.seed_capacity as usize).min(seeds.len()-1);
-
-	if collect_count > 0 && seeds.is_empty()
-	{
-		let mut best_seeds: Vec<_> = seeds.iter().map(|seed|
-		{
-			tree.iter()
-				.map(|(pos, _)|
-				{
-					let (_, dist) = pos.apply_seed(*seed);
-					dist
-				})
-				.min().unwrap()
-		}).collect();
-
-		best_seeds.select_nth_unstable(collect_count);
-
-		for dist in &best_seeds[..collect_count]
-		{
-			tree_dist += dist;
-		}
-	}
 
 	tree_dist
 }

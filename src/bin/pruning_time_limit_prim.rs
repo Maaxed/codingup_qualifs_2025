@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::time::{Duration, Instant};
 
+use codingup_qualifs::prim::prim2;
 use codingup_qualifs::quantum::QPos;
 use codingup_qualifs::{io::*, solve_and_write_output, Action, ActionKind};
 use hashbrown::{Equivalent, HashMap};
@@ -24,11 +25,10 @@ pub struct MyAction
 #[derive(Debug, Copy, Clone)]
 pub enum Res
 {
-	Solved,
 	SolutionFound
 	{
 		cost: i32,
-		action: MyAction,
+		action: Option<MyAction>,
 	},
 	NoSolution,
 }
@@ -53,7 +53,7 @@ fn find_best_action_time_limit(input: &Input, memo: &mut HashMap<(State, u32), (
 	let start = Instant::now();
 
 	let mut last_res = None;
-	for i in 1..
+	for i in 1..((state.plants.len() + state.seeds.len()) as u32)
 	{
 		let res = find_best_action(input, memo, state, max_cost, start, time_limit, i, i == 1);
 		if let Some(res) = res
@@ -74,12 +74,13 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 {
 	if state.plants.is_empty()
 	{
-		return Some(Res::Solved);
+		return Some(Res::SolutionFound { cost: 0, action: None });
 	}
 
 	if depth == 0
 	{
-		return Some(Res::Solved);
+		let prim = prim2(input, state.robot_pos, &state.plants);
+		return Some(Res::SolutionFound { cost: prim, action: None });
 	}
 
 	if let Some((ref_max_cost, res)) = memo.get(&StateAndDepth { state, depth })
@@ -124,7 +125,48 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 	if state.seed_storage > 0
 	{
 		state.seed_storage -= 1;
-		for index in 0..state.plants.len()
+		
+		let mut plants: Vec<(usize, i32)> = (0..state.plants.len())
+			.filter_map(|index|
+			{
+				if !force_compute && start.elapsed() >= time_limit
+				{
+					return None;
+				}
+
+				let plant = state.plants[index];
+				let (new_pos, dist) = pos.apply_plant(input, plant);
+
+				if dist >= min_cost
+				{
+					return None;
+				}
+
+				state.plants.remove(index);
+				let prim = prim2(input, new_pos, &state.plants) + dist;
+				state.plants.insert(index, plant);
+
+				if prim >= min_cost
+				{
+					return None;
+				}
+
+				Some((index, prim))
+			})
+			.collect();
+		
+		if !force_compute && start.elapsed() >= time_limit
+		{
+			state.seed_storage += 1;
+			return None;
+		}
+
+		plants.sort_unstable_by_key(|(_index, prim)|
+		{
+			*prim
+		});
+
+		for (index, prim) in plants
 		{
 			if !force_compute && start.elapsed() >= time_limit
 			{
@@ -138,9 +180,9 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 			
 			let mut cost = dist;
 			
-			if cost >= min_cost // we are worst even without checking the children nodes, prune this branch
+			if prim >= min_cost // we are worst even without checking the children nodes, prune this branch
 			{
-				continue;
+				break; // Since I sorted the list, I can break here
 			}
 
 			state.robot_pos = new_pos;
@@ -162,8 +204,6 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 				{
 					cost += child_cost;
 				},
-				Some(Res::Solved) =>
-				{ },
 				Some(Res::NoSolution) => continue,
 			}
 
@@ -179,7 +219,44 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 
 	if state.seed_storage < input.seed_capacity
 	{
-		for index in 0..state.seeds.len()
+		let mut seeds: Vec<(usize, i32)> = (0..state.seeds.len())
+			.filter_map(|index|
+			{
+				if !force_compute && start.elapsed() >= time_limit
+				{
+					return None;
+				}
+
+				let seed = state.seeds[index];
+				let (new_pos, dist) = pos.apply_seed(seed);
+
+				if dist >= min_cost
+				{
+					return None;
+				}
+
+				let prim = prim2(input, new_pos, &state.plants) + dist;
+
+				if prim >= min_cost
+				{
+					return None;
+				}
+
+				Some((index, prim))
+			})
+			.collect();
+		
+		if !force_compute && start.elapsed() >= time_limit
+		{
+			return None;
+		}
+		
+		seeds.sort_unstable_by_key(|(_index, prim)|
+		{
+			*prim
+		});
+
+		for (index, prim) in seeds
 		{
 			if !force_compute && start.elapsed() >= time_limit
 			{
@@ -191,9 +268,9 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 
 			let mut cost = dist;
 
-			if cost >= min_cost // we are worst even without checking the children nodes, prune this branch
+			if prim >= min_cost // we are worst even without checking the children nodes, prune this branch
 			{
-				continue;
+				break;
 			}
 
 			let  old_seed_storage = state.seed_storage;
@@ -213,8 +290,6 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 				{
 					cost += child_cost;
 				},
-				Res::Solved =>
-				{ },
 				Res::NoSolution => continue,
 			}
 
@@ -231,7 +306,7 @@ fn find_best_action(input: &Input, memo: &mut HashMap<(State, u32), (i32, Res)>,
 		Res::SolutionFound
 		{
 			cost: min_cost,
-			action: min_action,
+			action: Some(min_action),
 		}
 	}
 	else
@@ -270,7 +345,7 @@ fn main() -> serde_json::Result<()>
 	while !state.plants.is_empty()
 	{
 		let max_dist = if lim { input.max_distance as i32 - distance_traveled+1 } else { i32::MAX };
-		let Res::SolutionFound { cost, action } = find_best_action_time_limit(&input, &mut memo, &mut state, max_dist, time_per_action)
+		let Res::SolutionFound { cost, action: Some(action) } = find_best_action_time_limit(&input, &mut memo, &mut state, max_dist, time_per_action)
 		else
 		{
 			if lim

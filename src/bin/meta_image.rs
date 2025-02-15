@@ -1,4 +1,5 @@
 use codingup_qualifs::io::{arg_file_name, read_input, read_output};
+use codingup_qualifs::{Action, ActionKind};
 use image::{Rgb, RgbImage};
 use line_drawing::Bresenham;
 
@@ -28,7 +29,13 @@ fn main()
 	let mut img = RgbImage::new(max_pos[0] + 1, max_pos[1] + 1);
 
 	// Draw meta
-	let actions = read_output();
+	let mut actions = read_output();
+
+	while matches!(actions.last(), Some(Action { kind: ActionKind::Collect, .. }))
+	{
+		// remove trailing collect actions
+		actions.pop();
+	}
 
 	let mut pos = [0; 2];
 

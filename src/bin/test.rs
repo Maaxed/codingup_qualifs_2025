@@ -1,5 +1,5 @@
 use codingup_qualifs::io::read_input;
-use codingup_qualifs::{resolve_fast, resolve_fast2, resolve_q_fast, Action, ActionKind};
+use codingup_qualifs::{resolve, resolve_fast, resolve_q_fast, Action, ActionKind};
 use rand::prelude::SliceRandom;
 use rand::rng;
 
@@ -33,10 +33,11 @@ fn main()
 	{
 		actions.shuffle(&mut rng);
 
-		let (p1, d1) = resolve_fast2(&input, &actions, true);
+		let (_, p0, d0) = resolve(&input, &actions);
+		let (p1, d1) = resolve_fast(&input, &actions, true);
 		let (p2, d2) = resolve_q_fast(&input, &actions, true);
 
-		if p1 != p2 || d1 != d2
+		/*if p1 != p2 || d1 != d2
 		{
 			for action in actions
 			{
@@ -45,9 +46,11 @@ fn main()
 			dbg!(p1, p2);
 			dbg!(d1, d2);
 			break;
-		}
-
+		}*/
+		
+		assert_eq!(p0, p1);
 		assert_eq!(p1, p2);
+		assert_eq!(d0, d1);
 		assert_eq!(d1, d2);
 	}
 }

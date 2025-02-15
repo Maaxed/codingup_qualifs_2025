@@ -43,12 +43,12 @@ impl QPos
 				let d = (d1 + 1) / 2;
 				new_state.robot_pos[0] += d * sign;
 				new_state.robot_pos[1] += d;
-				new_state.range -= d;
+				new_state.range -= d * sign;
 			}
 			else if d2 > 0
 			{
 				let d = (d2 + 1) / 2;
-				new_state.range -= d;
+				new_state.range -= d * sign;
 			}
 		}
 		else
